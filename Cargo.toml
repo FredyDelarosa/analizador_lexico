@@ -1,0 +1,15 @@
+[package]
+name = "analizador"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+eframe = "0.33"
+egui = "0.26"
+lazy_static = "1.4"
+
+# Regex crate
+regex = "1"
+
+# rfd for native file dialogs (opcional, facilita seleccionar archivos)
+rfd = "0.9"
