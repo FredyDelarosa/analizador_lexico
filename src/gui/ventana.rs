@@ -1,4 +1,5 @@
 use eframe::egui::{CentralPanel, Context};
+use eframe::egui;
 
 use super::controlador::ControladorGUI;
 
@@ -35,27 +36,41 @@ impl eframe::App for AppGui {
 
             ui.separator();
 
-            ui.label(&format!(
-                "Diccionario: {}",
-                self.controlador
-                    .ruta_diccionario
-                    .as_ref()
-                    .map(|p| p.to_string_lossy())
-                    .unwrap_or_else(|| "(no cargado)".into())
-            ));
+            ui.collapsing("Archivos cargados", |ui| {
+                ui.label(format!(
+                    "Diccionario: {}",
+                    self.controlador
+                        .ruta_diccionario
+                        .as_ref()
+                        .map(|p| p.to_string_lossy())
+                        .unwrap_or_else(|| "(no cargado)".into())
+                ));
 
-            ui.label(&format!(
-                "Texto: {}",
-                self.controlador
-                    .ruta_texto
-                    .as_ref()
-                    .map(|p| p.to_string_lossy())
-                    .unwrap_or_else(|| "(no cargado)".into())
-            ));
+                ui.label(format!(
+                    "Texto: {}",
+                    self.controlador
+                        .ruta_texto
+                        .as_ref()
+                        .map(|p| p.to_string_lossy())
+                        .unwrap_or_else(|| "(no cargado)".into())
+                ));
+            });
 
             ui.separator();
 
-            ui.label(&self.controlador.texto_mostrar);
+            ui.collapsing("Resultados del análisis léxico", |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.monospace(&self.controlador.texto_mostrar);
+                });
+            });
+
+            ui.separator();
+
+            ui.collapsing("Recorrido DFA del diccionario", |ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    ui.monospace(&self.controlador.recorrido_diccionario);
+                });
+            });
 
             ui.separator();
 

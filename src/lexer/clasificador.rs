@@ -1,6 +1,6 @@
 use crate::lexer::diccionario::Diccionario;
-use crate::lexer::expresiones;
-//use crate::lexer::salida::exportar_tokens;
+use crate::lexer::dfa_diccionario::{DFADiccionario, ResultadoDFADiccionario};
+use crate::lexer::expresiones::es_identificador;
 
 #[derive(Debug, Clone)]
 pub enum TipoToken {
@@ -13,14 +13,15 @@ pub enum TipoToken {
 pub struct Token {
     pub tipo: TipoToken,
     pub lexema: String,
+    pub dfa_diccionario: ResultadoDFADiccionario,
 }
 
 impl Token {
     pub fn tipo_str(&self) -> String {
         match &self.tipo {
             TipoToken::PalabraClave(t) => t.clone(),
-            TipoToken::Identificador => "IDENTIFICADOR".to_string(),
-            TipoToken::ErrorLexico => "ERROR_LEXICO".to_string(),
+            TipoToken::Identificador => "IDENTIFICADOR".into(),
+            TipoToken::ErrorLexico => "ERROR_LEXICO".into(),
         }
     }
 
@@ -37,23 +38,33 @@ impl Token {
     }
 }
 
-pub fn clasificar_palabra(palabra: &str, dic: &Diccionario) -> Token {
-    if let Some(token) = dic.get(palabra) {
+pub fn clasificar_palabra(
+    palabra: &str,
+    dic: &Diccionario,
+    dfa_dic: &DFADiccionario,
+) -> Token {
+    let recorrido_dic = dfa_dic.recorrer(palabra);
+
+    if recorrido_dic.valido {
+        let token = dic.get(palabra).unwrap_or(&"RESERVADA".into()).clone();
         return Token {
-            tipo: TipoToken::PalabraClave(token.clone()),
-            lexema: palabra.to_string(),
+            tipo: TipoToken::PalabraClave(token),
+            lexema: palabra.into(),
+            dfa_diccionario: recorrido_dic,
         };
     }
 
-    if expresiones::es_identificador(palabra) {
+    if es_identificador(palabra) {
         return Token {
             tipo: TipoToken::Identificador,
-            lexema: palabra.to_string(),
+            lexema: palabra.into(),
+            dfa_diccionario: recorrido_dic,
         };
     }
 
     Token {
         tipo: TipoToken::ErrorLexico,
-        lexema: palabra.to_string(),
+        lexema: palabra.into(),
+        dfa_diccionario: recorrido_dic,
     }
 }
